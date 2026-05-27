@@ -54,6 +54,7 @@ interface IResolveProxyConfigOptions {
     fallbackOptions?: {
         showHwidMaxDeviceRemarks?: boolean;
         showHwidNotSupportedRemarks?: boolean;
+        showTestRemarks?: boolean;
     };
 }
 
@@ -146,6 +147,9 @@ export class ResolveProxyConfigService {
                 }
                 if (fallbackOptions.showHwidNotSupportedRemarks) {
                     return settings.customRemarks.HWIDNotSupported;
+                }
+                if (fallbackOptions.showTestRemarks) {
+                    return settings.customRemarks.test;
                 }
             }
 

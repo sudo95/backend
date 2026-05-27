@@ -273,4 +273,18 @@ export class HwidUserDevicesService {
             return fail(ERRORS.INTERNAL_SERVER_ERROR);
         }
     }
+
+    async setBanStatus(hwid: string, userUuid: string, isBanned: boolean) {
+        try {
+            const updated = await this.hwidUserDevicesRepository.setBanStatus(
+                hwid,
+                userUuid,
+                isBanned,
+            );
+            return ok({ affected: updated, isBanned });
+        } catch (error) {
+            this.logger.error(error);
+            return fail(ERRORS.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

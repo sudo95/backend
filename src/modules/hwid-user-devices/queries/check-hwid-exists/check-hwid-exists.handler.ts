@@ -10,19 +10,21 @@ import { CheckHwidExistsQuery } from './check-hwid-exists.query';
 @QueryHandler(CheckHwidExistsQuery)
 export class CheckHwidExistsHandler implements IQueryHandler<
     CheckHwidExistsQuery,
-    TResult<{ exists: boolean }>
+    TResult<{ exists: boolean; isBanned: boolean }>
 > {
     private readonly logger = new Logger(CheckHwidExistsHandler.name);
     constructor(private readonly hwidUserDevicesRepository: HwidUserDevicesRepository) {}
 
-    async execute(query: CheckHwidExistsQuery): Promise<TResult<{ exists: boolean }>> {
+    async execute(
+        query: CheckHwidExistsQuery,
+    ): Promise<TResult<{ exists: boolean; isBanned: boolean }>> {
         try {
             const result = await this.hwidUserDevicesRepository.checkHwidExists(
                 query.hwid,
                 query.userUuid,
             );
 
-            return ok({ exists: result });
+            return ok(result);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.CHECK_HWID_EXISTS_ERROR);

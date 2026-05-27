@@ -9,4 +9,5 @@ export const HWID_ROUTES = {
 
     STATS: 'devices/stats', // get
     TOP_USERS_BY_DEVICES: 'devices/top-users', // get
+    SET_BAN_STATUS: 'set-ban-status',
 } as const;

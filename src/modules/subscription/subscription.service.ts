@@ -163,6 +163,23 @@ export class SubscriptionService {
                         contentType: 'text/plain',
                     });
 
+                    if (isAllowed.response.hwidInBlacklist) {
+                        const { subscription, contentType } =
+                            await this.renderTemplatesService.generateSubscription({
+                                srrContext,
+                                user: user.response,
+                                hosts: [],
+                                fallbackOptions: {
+                                    showHwidMaxDeviceRemarks: false,
+                                    showHwidNotSupportedRemarks: false,
+                                    showTestRemarks: true,
+                                },
+                            });
+
+                        response.body = subscription;
+                        response.contentType = contentType;
+                    }
+
                     if (
                         isAllowed.response.maxDeviceReached &&
                         subscriptionSettings.hwidSettings.maxDevicesAnnounce
@@ -707,10 +724,11 @@ export class SubscriptionService {
 
     private async checkHwidDeviceExists(
         dto: CheckHwidExistsQuery,
-    ): Promise<TResult<{ exists: boolean }>> {
-        return this.queryBus.execute<CheckHwidExistsQuery, TResult<{ exists: boolean }>>(
-            new CheckHwidExistsQuery(dto.hwid, dto.userUuid),
-        );
+    ): Promise<TResult<{ exists: boolean; isBanned: boolean }>> {
+        return this.queryBus.execute<
+            CheckHwidExistsQuery,
+            TResult<{ exists: boolean; isBanned: boolean }>
+        >(new CheckHwidExistsQuery(dto.hwid, dto.userUuid));
     }
 
     private async checkHwidDeviceLimit(
@@ -723,9 +741,29 @@ export class SubscriptionService {
             maxDeviceReached: boolean;
             hwidNotSupported: boolean;
             limitBypassed?: boolean;
+            hwidInBlacklist?: boolean;
         }>
     > {
         try {
+            let existsCheck: { exists: boolean; isBanned: boolean } | null = null;
+
+            if (hwidHeaders !== null) {
+                const result = await this.checkHwidDeviceExists({
+                    hwid: hwidHeaders.hwid,
+                    userUuid: user.uuid,
+                });
+                if (result.isOk) existsCheck = result.response;
+            }
+
+            if (existsCheck?.isBanned) {
+                return ok({
+                    isSubscriptionAllowed: false,
+                    maxDeviceReached: false,
+                    hwidNotSupported: false,
+                    hwidInBlacklist: true,
+                });
+            }
+
             if (user.hwidDeviceLimit === 0) {
                 if (hwidHeaders !== null) {
                     await this.usersQueuesService.checkAndUpsertHwidDevice({
@@ -753,28 +791,20 @@ export class SubscriptionService {
                 });
             }
 
-            const isDeviceExists = await this.checkHwidDeviceExists({
-                hwid: hwidHeaders.hwid,
-                userUuid: user.uuid,
-            });
-
-            if (isDeviceExists.isOk) {
-                if (isDeviceExists.response.exists) {
-                    await this.usersQueuesService.checkAndUpsertHwidDevice({
-                        hwid: hwidHeaders.hwid,
-                        userUuid: user.uuid,
-                        platform: hwidHeaders.platform,
-                        osVersion: hwidHeaders.osVersion,
-                        deviceModel: hwidHeaders.deviceModel,
-                        userAgent: hwidHeaders.userAgent,
-                    });
-
-                    return ok({
-                        isSubscriptionAllowed: true,
-                        maxDeviceReached: false,
-                        hwidNotSupported: false,
-                    });
-                }
+            if (existsCheck?.exists) {
+                await this.usersQueuesService.checkAndUpsertHwidDevice({
+                    hwid: hwidHeaders.hwid,
+                    userUuid: user.uuid,
+                    platform: hwidHeaders.platform,
+                    osVersion: hwidHeaders.osVersion,
+                    deviceModel: hwidHeaders.deviceModel,
+                    userAgent: hwidHeaders.userAgent,
+                });
+                return ok({
+                    isSubscriptionAllowed: true,
+                    maxDeviceReached: false,
+                    hwidNotSupported: false,
+                });
             }
 
             const count = await this.countHwidUserDevices({ userUuid: user.uuid });

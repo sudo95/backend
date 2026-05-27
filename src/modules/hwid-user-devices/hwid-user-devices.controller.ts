@@ -24,6 +24,7 @@ import {
     GetUserHwidDevicesCommand,
 } from '@libs/contracts/commands';
 import { CONTROLLERS_INFO, HWID_CONTROLLER } from '@libs/contracts/api';
+import { SetBanStatusCommand } from '@libs/contracts/commands';
 import { ROLE } from '@libs/contracts/constants';
 
 import {
@@ -42,6 +43,7 @@ import {
     GetUserHwidDevicesResponseDto,
 } from './dtos';
 import { BaseUserHwidDevicesResponseModel, GetAllHwidDevicesResponseModel } from './models';
+import { SetBanStatusRequestDto, SetBanStatusResponseDto } from './dtos';
 import { HwidUserDevicesService } from './hwid-user-devices.service';
 
 @ApiBearerAuth('Authorization')
@@ -250,6 +252,34 @@ export class HwidUserDevicesController {
             response: {
                 total: data.length,
                 devices: data.map((item) => new BaseUserHwidDevicesResponseModel(item)),
+            },
+        };
+    }
+
+    @ApiNotFoundResponse({
+        description: 'Device not found',
+    })
+    @ApiOkResponse({
+        type: SetBanStatusResponseDto,
+        description: 'Ban status updated successfully',
+    })
+    @Endpoint({
+        command: SetBanStatusCommand,
+        httpCode: HttpStatus.OK,
+        apiBody: SetBanStatusRequestDto,
+    })
+    async setBanStatus(@Body() body: SetBanStatusRequestDto): Promise<SetBanStatusResponseDto> {
+        const result = await this.hwidUserDevicesService.setBanStatus(
+            body.hwid,
+            body.userUuid,
+            body.isBanned,
+        );
+
+        const data = errorHandler(result);
+        return {
+            response: {
+                affected: data.affected,
+                isBanned: data.isBanned,
             },
         };
     }

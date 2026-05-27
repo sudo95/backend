@@ -5,3 +5,4 @@ export * from './get-all-hwid-devices.dto';
 export * from './get-hwid-devices-stats.dto';
 export * from './get-top-users-by-hwid-devices.dto';
 export * from './get-user-hwid-devices.dto';
+export * from './set-ban-status.dto';

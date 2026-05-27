@@ -358,6 +358,7 @@ model HwidUserDevices {
   osVersion   String? @map("os_version")
   deviceModel String? @map("device_model")
   userAgent   String? @map("user_agent")
+  isBanned    Boolean @default(false) @map("is_banned")
 
   user Users @relation(fields: [userUuid], references: [uuid], onDelete: Cascade)
 

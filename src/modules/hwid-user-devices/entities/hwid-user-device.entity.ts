@@ -7,6 +7,7 @@ export class HwidUserDeviceEntity implements HwidUserDevices {
     public osVersion: string | null;
     public deviceModel: string | null;
     public userAgent: string | null;
+    public isBanned: boolean;
 
     public createdAt: Date;
     public updatedAt: Date;

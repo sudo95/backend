@@ -86,11 +86,19 @@ export class HwidUserDevicesRepository implements Omit<
         });
     }
 
-    public async checkHwidExists(hwid: string, userUuid: string): Promise<boolean> {
-        const count = await this.prisma.tx.hwidUserDevices.count({
+    public async checkHwidExists(
+        hwid: string,
+        userUuid: string,
+    ): Promise<{ exists: boolean; isBanned: boolean }> {
+        const device = await this.prisma.tx.hwidUserDevices.findFirst({
             where: { hwid, userUuid },
+            select: { isBanned: true },
         });
-        return count > 0;
+
+        return {
+            exists: !!device,
+            isBanned: device?.isBanned ?? false,
+        };
     }
 
     public async deleteByHwidAndUserUuid(hwid: string, userUuid: string): Promise<boolean> {
@@ -261,5 +269,13 @@ export class HwidUserDevicesRepository implements Omit<
             })),
             total: Number(count),
         };
+    }
+
+    async setBanStatus(hwid: string, userUuid: string, isBanned: boolean): Promise<number> {
+        const result = await this.prisma.tx.hwidUserDevices.updateMany({
+            where: { hwid, userUuid },
+            data: { isBanned },
+        });
+        return result.count;
     }
 }

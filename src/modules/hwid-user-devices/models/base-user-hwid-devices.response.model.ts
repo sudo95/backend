@@ -8,6 +8,7 @@ export class BaseUserHwidDevicesResponseModel {
     public readonly osVersion: string | null;
     public readonly deviceModel: string | null;
     public readonly userAgent: string | null;
+    public readonly isBanned: boolean;
 
     public readonly createdAt: Date;
     public readonly updatedAt: Date;
@@ -20,6 +21,7 @@ export class BaseUserHwidDevicesResponseModel {
         this.osVersion = data.osVersion;
         this.deviceModel = data.deviceModel;
         this.userAgent = data.userAgent;
+        this.isBanned = data.isBanned;
 
         this.createdAt = new Date(data.createdAt);
         this.updatedAt = new Date(data.updatedAt);

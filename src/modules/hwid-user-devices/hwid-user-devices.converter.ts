@@ -19,6 +19,7 @@ const entityToModel = (entity: HwidUserDeviceEntity): HwidUserDevices => {
         osVersion: entity.osVersion,
         deviceModel: entity.deviceModel,
         userAgent: entity.userAgent,
+        isBanned: entity.isBanned,
 
         createdAt: entity.createdAt,
         updatedAt: entity.updatedAt,
