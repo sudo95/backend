@@ -20,7 +20,7 @@ export async function seedSubscriptionSettings(prisma: PrismaClient) {
         ],
         HWIDMaxDevicesExceeded: ['Limit of devices reached'],
         HWIDNotSupported: ['App not supported'],
-        test: ['This is a test remark'],
+        HWIDBlacklisted: ['This is a test remark'],
     } satisfies TCustomRemarks;
 
     const existingConfig = await prisma.subscriptionSettings.findFirst();

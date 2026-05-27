@@ -149,7 +149,7 @@ export class ResolveProxyConfigService {
                     return settings.customRemarks.HWIDNotSupported;
                 }
                 if (fallbackOptions.showTestRemarks) {
-                    return settings.customRemarks.test;
+                    return settings.customRemarks.HWIDBlacklisted;
                 }
             }
 
